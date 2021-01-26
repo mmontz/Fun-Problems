@@ -1,0 +1,138 @@
+//problem: https://leetcode.com/discuss/interview-question/375258/Twitter-or-OA-2019-or-Game-Events
+
+//
+//  main.cpp
+//  practice
+//
+//  Created by Mahshid Montazer on 11/13/20.
+//  Copyright © 2020 Mahshid Montazer. All rights reserved.
+//
+
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <unordered_map>
+
+using namespace std;
+
+struct GameInfo{
+    string team = "";
+    string player1;
+    int time;
+    int extra = 0;
+    char event;
+    string player2 = "";
+    int index;
+};
+
+
+void setPlayer (GameInfo & info ,vector <string>& tokens){
+    stringstream temp;
+    info.event = tokens.back()[0];
+    string time;
+    if (tokens.size() == 4){
+        temp << tokens[2];
+        time = tokens[2];
+        info.player1 = tokens[0] + " " + tokens[1];
+    }
+    else{
+        temp << tokens[1];
+        time = tokens[1];
+        info.player1 = tokens[0];
+    }
+    
+    string intermediate = "";
+    getline(temp , intermediate , '+');
+    info.time = stoi(time);
+    if (intermediate.length() != time.length()){
+        getline(temp , intermediate , '+');
+        info.extra = stoi(intermediate);
+    }
+}
+
+GameInfo getTokens (string s){
+    stringstream temp (s);
+    vector <string> tokens;
+    string intermediate = "";
+    while (getline (temp , intermediate , ' ')){
+        tokens.push_back(intermediate);
+    }
+    
+    GameInfo currGame;
+    if (tokens.back().length() > 1){ //name
+        currGame.player2 += tokens.back();
+        tokens.pop_back();
+        if (tokens.back().length() > 1){ //firstname
+            currGame.player2 = tokens.back() + " " + currGame.player2;
+            tokens.pop_back();
+        }
+    }
+    
+    setPlayer(currGame, tokens);
+    return currGame;
+}
+
+bool compare (const GameInfo & info1 , const GameInfo & info2){
+    unordered_map <char, int> helper;
+    helper['G'] = 0;
+    helper['Y'] = 1;
+    helper['R'] = 2;
+    helper['S'] = 3;
+    if (info1.time == info2.time){
+        if (info1.extra == info2.extra){
+            if (helper[info1.event] == helper[info2.event]){
+                if (info1.team == info2.team){
+                    if (info1.player1 == info2.player1){
+                        return info1.player2 <= info2.player2;
+                    }
+                    return info1.player1 < info2.player1;
+                }
+                return info1.team < info2.team;
+            }
+            return helper[info1.event] < helper[info2.event];
+        }
+        return info1.extra < info2.extra;
+    }
+    return info1.time < info2.time;
+}
+
+vector <string> findRes (string team1 , string team2 , vector<string> & event1 , vector<string> & event2){
+    vector <GameInfo> events;
+    GameInfo info;
+    for (int i=0 ; i<event1.size() ; i++){
+        info = getTokens(event1[i]);
+        info.team = team1;
+        info.index = i;
+        events.push_back(info);
+    }
+    
+    for (int i=0 ; i<event2.size() ; i++){
+        info = getTokens(event2[i]);
+        info.team = team2;
+        info.index = i;
+        events.push_back(info);
+    }
+    sort (events.begin() , events.end() , compare);
+    vector <string> res;
+    for (int i=0 ; i<events.size() ; i++){
+        if (events[i].team == team1){
+            res.push_back(team1 + " " + event1[events[i].index]);
+        }
+        else{
+            res.push_back(team2 + " " + event2[events[i].index]);
+        }
+    }
+    return res;
+}
+
+
+int main() {
+    string team1 = "EDC";
+    string team2 = "CDE";
+    vector <string> event1 = {"Name1 12 G" , "FirstName LastName 43 Y"};
+    vector <string> event2 = {"Name3 45+1 S SubName" , "Name4 46 G"};
+    vector <string> ans = findRes(team1, team2, event1, event2);
+    for (int i=0 ; i<ans.size() ; i++)
+        cout << ans[i] << endl;
+    return 0;
+}
