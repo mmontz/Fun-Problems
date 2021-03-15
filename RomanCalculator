@@ -40,16 +40,16 @@ using namespace std;
 //1. the expression is valid
   //i.e. we only see correct paranthesis and operators configurations and valid letters (upper case)
 
-//2. we can have spaces but not between letters of a romain number:
+//2. we can have spaces but not between letters of a Roman number:
   //i.e. "  II +    II   " is valid but "I I + II" is invalid
 
 //3. while evaluating the expression from left to right, the partial results never over/under flow. as a result, the final result will fit into a 32 bit integer as well
 
-//4. the romain numbers are positive. i.e. we don't have II+-II
+//4. the Roman numbers are positive. i.e. we don't have II+-II
 
 //5. empty expression string corresponds to 0
 
-int romainToInt (string number){
+int romanToInt (string number){
   unordered_map <string , int> helper;
   helper["V"] = 5;
   helper["L"] = 50;
@@ -115,11 +115,11 @@ int evaluate (string expression , int &index , stack <int>& numbers , char opera
     currNum = evaluate (expression , ++index , temp , operand);
   }
   else{
-    //roman number
+    //Roman number
     int tail = index;
     while (tail < (int)expression.length() && validLetters.count(expression[tail]) != 0)
       tail++;
-    currNum = romainToInt (expression.substr(index , tail-index));
+    currNum = romanToInt (expression.substr(index , tail-index));
     index = tail-1;
   }
   
